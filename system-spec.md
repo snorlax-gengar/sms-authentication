@@ -27,8 +27,12 @@
 ```
 sms-auth/
 ├── README.md                                 # 프로젝트 소개·실행법·API 예시
+├── CLAUDE.md                                 # AI 에이전트용 프로젝트 길라잡이
 ├── LICENSE                                   # MIT
-├── .github/workflows/ci.yml                  # GitHub Actions (build+test, docker build)
+├── api.http                                  # IDE용 API 요청 모음 (IntelliJ / VS Code REST Client)
+├── .editorconfig
+├── .github/workflows/ci.yml                  # GitHub Actions (wrapper 검증, build+test, 커버리지, docker build)
+├── .github/dependabot.yml                    # 의존성 자동 업데이트 (gradle/actions/docker)
 ├── build.gradle
 ├── settings.gradle
 ├── gradlew
@@ -255,3 +259,9 @@ sms-auth/
 * `2026-07-25`: `@Async` 명세 불일치 정리 — 미사용 `AsyncConfig`(死코드) 및 `@EnableAsync` 제거, 발송은 동기 방식으로 문서 확정.
 * `2026-07-25`: Spring Boot Actuator 도입 — `/actuator/health/readiness`(DB·Redis 포함)로 Dockerfile·compose 헬스체크 교체(기존 `/v3/api-docs` 편법 대체).
 * `2026-07-25`: 공개 레포 준비 — `README.md`(아키텍처·실행법·API 예시·설계 노트), `LICENSE`(MIT), GitHub Actions CI(`build+test`, Docker 빌드 검증) 추가.
+* `2026-07-25`: `CLAUDE.md` 추가 — AI 에이전트용 길라잡이(문서 체계, 명령어, 되돌리면 안 되는 설계 결정, 테스트 규약).
+* `2026-07-25`: 품질·운영 보강 — JaCoCo 커버리지(CI PR 코멘트 연동), Dependabot(gradle/actions/docker), Gradle Wrapper 검증, `.editorconfig`, `api.http` 추가.
+* `2026-07-25`: Testcontainers 통합 테스트(`SmsAuthIntegrationTest`) 추가 — 실제 PostgreSQL·Redis로 전체 인증 플로우, Rate Limit, 무차별 대입 방어를 검증하며 `prod` 프로필 실행으로 `schema.sql` ↔ 엔티티 정합성까지 보증. `@Tag("integration")`으로 `-PexcludeIntegration` 제외 가능.
+* `2026-07-25`: `/verify` Swagger 문서에 누락됐던 429(`SMS_VERIFICATION_ATTEMPT_EXCEEDED`) 응답 추가.
+* `2026-07-25`: `SolapiAuthHeaderGeneratorTest` 추가 — HMAC-SHA256 서명을 독립 재계산해 대조, salt 유일성·헤더 형식 검증. 커버리지 52% → 76%(브랜치 62%), CI 임계값 70%로 확정.
+* `2026-07-25`: Gradle 9 대비 — `testRuntimeOnly junit-platform-launcher` 명시(테스트 프레임워크 자동 로딩 deprecation 해소), Testcontainers BOM을 `dependencyManagement.mavenBom`에서 Gradle 네이티브 `platform()`으로 전환.

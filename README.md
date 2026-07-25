@@ -147,11 +147,21 @@ curl -X POST http://localhost:8080/api/v1/sms/verify \
 ## 테스트
 
 ```bash
-./gradlew test
+./gradlew test                            # 전체 (Docker 필요)
+./gradlew test -PexcludeIntegration       # 통합 테스트 제외 (Docker 없이)
 ```
 
-- `SmsAuthServiceTest` — Mockito 기반 순수 유닛 테스트 (Rate Limit 경계값, 시도 횟수 초과, 발송 실패 이력 등)
-- `SmsAuthControllerTest` — `@WebMvcTest` 슬라이스 테스트 (입력값 검증, HTTP 상태 코드, 에러 코드)
+| 테스트 | 범위 |
+|--------|------|
+| `SmsAuthServiceTest` | Mockito 순수 유닛 — Rate Limit 경계값, 시도 횟수 초과, 발송 실패 이력 |
+| `SmsAuthControllerTest` | `@WebMvcTest` 슬라이스 — 입력값 검증, HTTP 상태 코드, 에러 코드 |
+| `SmsAuthIntegrationTest` | Testcontainers — 실제 PostgreSQL·Redis로 전체 플로우 검증 |
+
+통합 테스트는 `prod` 프로필로 실행되므로, 통과 시 **`schema.sql`의 DDL과 `SmsSendLog` 엔티티가 일치함**(`ddl-auto: validate`)까지 함께 보증됩니다.
+
+커버리지 리포트: `./gradlew test` 실행 후 `build/reports/jacoco/test/html/index.html`
+
+API를 직접 호출해보려면 [`api.http`](api.http)를 IntelliJ 또는 VS Code(REST Client)에서 열어 실행하세요.
 
 ## 설계 노트
 

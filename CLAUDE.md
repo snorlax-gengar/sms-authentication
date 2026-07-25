@@ -19,7 +19,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 명령어
 
 ```bash
-./gradlew test                                          # 전체 테스트
+./gradlew test                                          # 전체 테스트 (통합 테스트 포함 — Docker 필요)
+./gradlew test -PexcludeIntegration                     # Docker 없이 유닛/슬라이스만
 ./gradlew test --tests '*SmsAuthServiceTest'            # 특정 클래스
 ./gradlew test --tests '*SmsAuthServiceTest$Verify'     # 특정 @Nested 그룹
 ./gradlew test --tests '*SmsAuthServiceTest$Verify.success'   # 특정 메서드
@@ -29,7 +30,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ./gradlew bootRun                                       # 로컬 실행 (local 프로필, Redis 필요)
 ```
 
-테스트 실패 시 리포트: `build/reports/tests/test/index.html`
+리포트: 테스트 `build/reports/tests/test/index.html`, 커버리지 `build/reports/jacoco/test/html/index.html`
+
+`SmsAuthIntegrationTest`는 `@Tag("integration")`이 붙어 있고 Testcontainers로 실제 PostgreSQL·Redis를 띄운다. **`prod` 프로필로 실행되므로 `schema.sql` ↔ 엔티티 정합성 검증을 겸한다** — 엔티티를 바꾸고 `schema.sql`을 안 고치면 이 테스트가 컨텍스트 로딩 단계에서 실패한다.
 
 로컬 실행에는 Redis만 있으면 된다 (`docker run -d -p 6379:6379 redis:7-alpine`). RDB는 H2 인메모리이고, `SMS_SENDER_PROVIDER` 기본값이 `dev`라 실제 문자는 발송되지 않고 콘솔에 인증번호가 출력된다.
 
