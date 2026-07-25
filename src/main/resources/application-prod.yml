@@ -1,0 +1,46 @@
+# 운영(prod) 프로필 — 외부 PostgreSQL + 외부 Redis
+# 실행: SPRING_PROFILES_ACTIVE=prod
+# 필수 환경 변수(DB_HOST, DB_NAME, DB_USERNAME, DB_PASSWORD, REDIS_HOST 등)는
+# 기본값을 두지 않아, 누락 시 기동 단계에서 즉시 실패하도록 한다(fail-fast).
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DB_NAME}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+      minimum-idle: ${DB_POOL_MIN_IDLE:2}
+
+  jpa:
+    hibernate:
+      # 스키마는 schema.sql로 직접 관리하고, Hibernate는 엔티티-스키마 일치 여부만 검증한다.
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  # schema.sql을 기동 시 실행하여 테이블이 없으면 생성한다(운영 DB에는 최초 1회 또는
+  # CREATE TABLE IF NOT EXISTS 이므로 재기동 시에도 안전하다).
+  sql:
+    init:
+      mode: always
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      ssl:
+        enabled: ${REDIS_SSL_ENABLED:false}
+      timeout: ${REDIS_TIMEOUT_MS:3000}
+
+  h2:
+    console:
+      enabled: false
+
+logging:
+  level:
+    com.example.sms: INFO

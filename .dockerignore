@@ -1,0 +1,15 @@
+.git
+.gitignore
+.gradle
+.idea
+.cursor
+build
+out
+*.iml
+*.ipr
+*.iws
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example

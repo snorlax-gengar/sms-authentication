@@ -1,0 +1,25 @@
+# 로컬 개발용 프로필 — 인메모리 H2 RDB + 로컬 Redis
+# 실행: SPRING_PROFILES_ACTIVE=local (또는 기본값이므로 미지정 시 자동 적용)
+spring:
+  datasource:
+    url: jdbc:h2:mem:smsauth;MODE=MySQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  h2:
+    console:
+      enabled: true
