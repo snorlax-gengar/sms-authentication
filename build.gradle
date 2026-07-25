@@ -38,7 +38,7 @@ dependencies {
 
     // Testcontainers 버전은 BOM(platform)으로 한 곳에서 관리한다.
     // io.spring.dependency-management의 mavenBom 대신 Gradle 네이티브 platform()을 쓴다.
-    testImplementation platform('org.testcontainers:testcontainers-bom:1.20.4')
+    testImplementation platform('org.testcontainers:testcontainers-bom:2.0.5')
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:postgresql'
 
