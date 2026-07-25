@@ -96,7 +96,7 @@ jobs:
       # 이미지 푸시 없이 빌드만 검증한다. 레지스트리 배포가 필요해지면
       # push: true 와 로그인 스텝을 추가한다.
       - name: Build image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           push: false
