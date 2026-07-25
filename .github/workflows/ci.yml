@@ -71,7 +71,7 @@ jobs:
       # PR에 커버리지 요약을 코멘트로 남긴다.
       - name: Report coverage
         if: github.event_name == 'pull_request'
-        uses: madrapps/jacoco-report@v1.7.1
+        uses: madrapps/jacoco-report@v1.8.0
         with:
           paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
