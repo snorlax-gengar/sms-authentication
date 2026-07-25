@@ -11,6 +11,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  checks: write          # 테스트 결과 체크 등록
+  pull-requests: write   # 커버리지 코멘트 작성
+
 jobs:
   build:
     name: Build & Test
@@ -26,12 +31,17 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      # gradle-wrapper.jar가 변조되지 않았는지 검증한다(공개 저장소 권장 보안 조치).
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v4
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      # ubuntu-latest 러너에는 Docker가 있으므로 Testcontainers 통합 테스트가 함께 실행된다.
       - name: Build and test
         run: ./gradlew build --no-daemon
 
@@ -43,12 +53,33 @@ jobs:
           path: build/reports/tests/test
           retention-days: 7
 
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: build/reports/jacoco/test/html
+          retention-days: 7
+
       - name: Publish test results
         if: always()
         uses: mikepenz/action-junit-report@v5
         with:
           report_paths: build/test-results/test/TEST-*.xml
           fail_on_failure: true
+
+      # PR에 커버리지 요약을 코멘트로 남긴다.
+      - name: Report coverage
+        if: github.event_name == 'pull_request'
+        uses: madrapps/jacoco-report@v1.7.1
+        with:
+          paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # 실측 76%(브랜치 62%) 기준. 리팩터링 과정의 일시적 변동을 흡수할
+          # 여유를 두되, 커버리지가 눈에 띄게 떨어지면 PR에서 잡히도록 한다.
+          min-coverage-overall: 70
+          min-coverage-changed-files: 65
+          title: 테스트 커버리지
 
   docker:
     name: Docker Build

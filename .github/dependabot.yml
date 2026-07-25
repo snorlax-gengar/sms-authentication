@@ -1,0 +1,47 @@
+version: 2
+
+updates:
+  # Gradle 의존성 (Spring Boot, springdoc, testcontainers 등)
+  - package-ecosystem: gradle
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Seoul
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+    groups:
+      # Spring Boot 관련 의존성은 함께 올려야 호환이 깨지지 않는다
+      spring-boot:
+        patterns:
+          - "org.springframework.boot:*"
+          - "io.spring.dependency-management*"
+      test-libraries:
+        patterns:
+          - "org.testcontainers:*"
+
+  # GitHub Actions 워크플로에서 사용하는 액션 버전
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Seoul
+    labels:
+      - dependencies
+      - ci
+
+  # Dockerfile의 베이스 이미지 (eclipse-temurin)
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Seoul
+    labels:
+      - dependencies
+      - docker
