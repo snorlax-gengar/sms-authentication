@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'jacoco'
     id 'org.springframework.boot' version '3.4.1'
     id 'io.spring.dependency-management' version '1.1.7'
 }
@@ -33,10 +34,50 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+
+    // Testcontainers 버전은 BOM(platform)으로 한 곳에서 관리한다.
+    // io.spring.dependency-management의 mavenBom 대신 Gradle 네이티브 platform()을 쓴다.
+    testImplementation platform('org.testcontainers:testcontainers-bom:1.20.4')
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
+
+    // Gradle 9부터는 테스트 프레임워크 구현체를 자동으로 로딩하지 않으므로 명시적으로 선언한다.
+    // (버전은 Spring Boot 의존성 관리가 결정)
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        // 통합 테스트는 Docker가 필요하다. Docker가 없는 환경에서는
+        // ./gradlew test -PexcludeIntegration 으로 제외하고 실행할 수 있다.
+        if (project.hasProperty('excludeIntegration')) {
+            excludeTags 'integration'
+        }
+    }
+    finalizedBy tasks.named('jacocoTestReport')
+}
+
+jacoco {
+    toolVersion = '0.8.12'
+}
+
+tasks.named('jacocoTestReport') {
+    dependsOn tasks.named('test')
+    reports {
+        xml.required = true      // CI 커버리지 리포팅용
+        html.required = true     // build/reports/jacoco/test/html/index.html
+        csv.required = false
+    }
+    // 커버리지 대상에서 제외: 설정 클래스, DTO(로직 없음), 진입점
+    // tasks.named{} 블록은 태스크 실현 시점(평가 이후)에 실행되므로 afterEvaluate로 감싸지 않는다.
+    classDirectories.setFrom(
+            sourceSets.main.output.asFileTree.matching {
+                exclude '**/config/**'
+                exclude '**/dto/**'
+                exclude '**/SmsAuthApplication.class'
+            }
+    )
 }
 
 // Dockerfile에서 산출물 경로를 버전 문자열에 의존하지 않고 결정적으로 참조하기 위해
