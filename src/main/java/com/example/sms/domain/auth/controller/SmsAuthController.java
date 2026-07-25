@@ -43,11 +43,16 @@ public class SmsAuthController {
         return ResponseEntity.ok(ApiResponse.success("인증번호가 발송되었습니다."));
     }
 
-    @Operation(summary = "인증번호 검증", description = "발송된 인증번호를 검증합니다. 성공 시 인증번호는 즉시 폐기됩니다(재사용 방지).")
+    @Operation(summary = "인증번호 검증",
+            description = "발송된 인증번호를 검증합니다. 성공 시 인증번호는 즉시 폐기됩니다(재사용 방지). "
+                    + "인증번호당 최대 5회까지 시도할 수 있으며, 초과 시 인증번호가 폐기되어 재발송이 필요합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "인증 성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400",
                     description = "인증번호 만료/미존재(SMS_VERIFICATION_EXPIRED) 또는 불일치(SMS_VERIFICATION_MISMATCH)",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "429",
+                    description = "검증 시도 횟수 초과, 인증번호 폐기됨 (SMS_VERIFICATION_ATTEMPT_EXCEEDED)",
                     content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     })
     @PostMapping("/verify")
