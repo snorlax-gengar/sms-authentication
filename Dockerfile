@@ -3,7 +3,7 @@
 # ============================================================================
 # Stage 1: Build — Gradle로 bootJar 생성
 # ============================================================================
-FROM eclipse-temurin:21-jdk-alpine AS builder
+FROM eclipse-temurin:24-jdk-alpine AS builder
 WORKDIR /workspace
 
 # 의존성 레이어 캐싱: 빌드 스크립트/wrapper만 먼저 복사해 소스 변경 시에도
@@ -19,7 +19,7 @@ RUN ./gradlew --no-daemon clean bootJar -x test
 # ============================================================================
 # Stage 2: Runtime — 빌드 도구 없이 JRE만 포함한 최소 이미지
 # ============================================================================
-FROM eclipse-temurin:21-jre-alpine AS runtime
+FROM eclipse-temurin:24-jre-alpine AS runtime
 WORKDIR /app
 
 # non-root 사용자로 실행 (컨테이너 보안 기본 원칙)
